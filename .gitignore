@@ -1,0 +1,7 @@
+/.vscode
+*.gb
+compile.bat
+song_number
+*.lst
+*.o
+*.asm
