@@ -8,7 +8,7 @@ extern const hUGESong_t song_number2;
 extern const hUGESong_t song_number3;
 
 uint8_t currentSound=0;
-uint8_t playing=TRUE;
+uint8_t muted=FALSE;
 uint8_t soundVolume=0;
 uint8_t soundBank=0;
 
@@ -18,6 +18,8 @@ void PlaySoundVBL(void) NONBANKED{
 
     uint8_t _previous_bank = _current_bank;
 
+    // Switch to whichever bank our song is in
+    // Not neccessary if the song is in bank 0
     SWITCH_ROM(soundBank);
 
     hUGE_dosound();
@@ -49,7 +51,7 @@ void main(void)
         joypadPrevious=joypadCurrent;
         joypadCurrent = joypad();
 
-        if(playing){
+        if(!muted){
             if((soundVolume>>4)<7){
                 soundVolume++;
             }
@@ -61,30 +63,37 @@ void main(void)
 
         v = (soundVolume>>4);
 
-        NR50_REG = AUDVOL_VOL_LEFT(v) | AUDVOL_VOL_RIGHT(v);
-        NR51_REG = v!=0 ? 0xFF:0;
+        NR50_REG = AUDVOL_VOL_LEFT(v) | AUDVOL_VOL_RIGHT(v); // a value of zero will still be audible
+        NR51_REG = v!=0 ? 0xFF:0; // turn sound off fully if our volume is zero
         
         if((joypadCurrent & J_B)  && !(joypadPrevious & J_B)){
-            playing=!playing;
+            muted=!muted;
         }
         
         if((joypadCurrent & J_A)  && !(joypadPrevious & J_A)){
 
             currentSound=(currentSound+1)%3;
-            
+
             if(currentSound==0){
+
+                // Sample song is in bank 0
+                // No bank switching needed, bank 0 is always active
                 hUGE_init(&sample_song);
             }else if(currentSound==1){
                 soundBank=1;
+
+                // Switch ROM bank BEFORE!!! starting a song in a different bank
                 SWITCH_ROM(soundBank);
                 hUGE_init(&song_number2);
             }else if(currentSound==2){
                 soundBank=2;
+
+                // Switch ROM bank BEFORE!!! starting a song in a different bank
                 SWITCH_ROM(soundBank);
                 hUGE_init(&song_number3);
             }
 
-            playing=TRUE;
+            muted=FALSE;
 
         }
 

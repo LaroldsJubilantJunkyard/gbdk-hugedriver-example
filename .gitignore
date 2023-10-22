@@ -5,3 +5,4 @@ song_number
 *.lst
 *.o
 *.asm
+*.sym
