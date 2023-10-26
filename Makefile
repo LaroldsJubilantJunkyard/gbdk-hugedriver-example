@@ -25,12 +25,17 @@ compile.bat: Makefile
 	@echo "REM Automatically generated from Makefile" > compile.bat
 	@make -sn | sed y/\\//\\\\/ | sed s/mkdir\ \-p/mkdir/ | grep -v make >> compile.bat
 
-song_number3.o:
+# We'll manually make our .o file for song_number3.o
+# we need to add includes for the hugedriver includes and library
+# use -Wf-bo2 to place it in bank 2
+song_number3.o: 
 	$(LCC) $(LCCFLAGS) -Ihugedriver/include -Wl-lhugedriver/gbdk/hUGEDriver.lib -Wf-bo2 -c -o song_number3.o song_number3.c
 
 # Compile and link all source files in a single call to LCC
-$(BINS):	$(CSOURCES) $(ASMSOURCES)  song_number3.o
-	$(LCC) $(LCCFLAGS) -Wm-yo4 -Wm-ya4 -Wm-yt3 -Ihugedriver/include -Wl-lhugedriver/gbdk/hUGEDriver.lib -o $@ $(CSOURCES) song_number3.o
+# we'll specify 4 rom banks
+# we need to add includes for the hugedriver includes and library
+$(BINS):	$(CSOURCES) $(ASMSOURCES)  song_number3.o # We'll add our song_number3.o file instead of .c
+	$(LCC) $(LCCFLAGS) -autobank -Wm-yoA -Wm-yt3 -Ihugedriver/include -Wl-lhugedriver/gbdk/hUGEDriver.lib -o $@ $(CSOURCES) song_number3.o
 
 clean:
 	rm -f *.o *.lst *.map *.gb *.ihx *.sym *.cdb *.adb *.asm

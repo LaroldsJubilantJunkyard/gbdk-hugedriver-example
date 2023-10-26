@@ -1,7 +1,10 @@
-#pragma bank 1
+#pragma bank 255
 
 #include "hUGEDriver.h"
 #include <stddef.h>
+
+
+BANKREF(song_number2_bankref)
 
 static const unsigned char order_cnt = 44;
 
