@@ -16,11 +16,8 @@ uint8_t muted=FALSE;
 uint8_t soundVolume=0;
 uint8_t soundBank=0;
 
+// We could do this for all 4 channels, but in this demo we'll only use one channel
 int8_t mutedChannel1Timer=0;
-int8_t mutedChannel2Timer=0;
-int8_t mutedChannel3Timer=0;
-int8_t mutedChannel4Timer=0;
-
 
 void ChangeSong() NONBANKED{
 
@@ -66,33 +63,41 @@ void ChangeSong() NONBANKED{
 
 void UpdateAudioVolume() NONBANKED{
 
-    uint8_t v;
+    uint8_t nonShiftedSoundVolume;
 
+    // If were not changing sounds
     if(currentSound==nextSound){
+
+        // Incease our sound volume while it's below 7 (7 is the maximum volume)
         if((soundVolume>>4)<7){
             soundVolume++;
         }
+    
+    // Otherwise, if we are changing sounds
     }else {
+
+        // Decrease the sound volume while it's above 0
         if((soundVolume>>4)>0){
             soundVolume--;
         }else{
 
+            // If it's below 0, change the song
             ChangeSong();
         }
     }
 
-    v = (soundVolume>>4);
+    nonShiftedSoundVolume = (soundVolume>>4);
 
-    // v should be a value from 0-7
-    if(v>7)v=7;
+    // nonShiftedSoundVolume should be a value from 0-7
+    if(nonShiftedSoundVolume>7)nonShiftedSoundVolume=7;
 
     // For more Info: https://gbdev.io/pandocs/Audio_Registers.html#ff24--nr50-master-volume--vin-panning
     // bit's 6, 5, and 4 are the left volume
     // bit's 0, 1, and 2 are the right volume
     // |       |      7     |   6  5  4    |     3      |   2  1  0    |
     // | NR50  |  VIN left  | Left Volume  | VIN right  | Right VOlume |
-    NR50_REG = AUDVOL_VOL_LEFT(v) | AUDVOL_VOL_RIGHT(v); // a value of zero will still be audible
-    NR51_REG = v!=0 ? 0xFF:0; // turn sound off fully if our volume is zero
+    NR50_REG = AUDVOL_VOL_LEFT(nonShiftedSoundVolume) | AUDVOL_VOL_RIGHT(nonShiftedSoundVolume); // a value of zero will still be audible
+    NR51_REG = nonShiftedSoundVolume!=0 ? 0xFF:0; // turn sound off fully if our volume is zero
 }
 
 // driver routine
@@ -127,7 +132,7 @@ void main(void)
     muted=FALSE;
 
     __critical {
-    ChangeSong();
+        ChangeSong();
         add_VBL(PlaySoundVBL);
     }
 
@@ -137,21 +142,26 @@ void main(void)
         joypadPrevious=joypadCurrent;
         joypadCurrent = joypad();
 
-        if((joypadCurrent & J_START)  && !(joypadPrevious & J_START)){
+        if((joypadCurrent & J_B)  && !(joypadPrevious & J_B)){
 
+            // Muge the huge driver sounds for channel 1
             hUGE_mute_channel(HT_CH1,HT_CH_MUTE);
 
+            // Play a sound effect on channel 1
             NR10_REG=0X00;
             NR11_REG=0X81;
             NR12_REG=0Xff;
             NR13_REG=0X73;
             NR14_REG=0X86;
 
+            // We'll wait 10 frames before continuing our hugedriver track
             mutedChannel1Timer=10;
         }
         
+        // If a was just pressed, and we aren't currently changing sounds
         if((joypadCurrent & J_A)  && !(joypadPrevious & J_A) && currentSound==nextSound){
 
+            // Change the next sound we play
             nextSound=(currentSound+1)%3;
         }
 
@@ -159,27 +169,6 @@ void main(void)
             mutedChannel1Timer--;
             if(mutedChannel1Timer==0){
                 hUGE_mute_channel(HT_CH1,HT_CH_PLAY);
-            }
-        }
-
-        if(mutedChannel2Timer>0){
-            mutedChannel2Timer--;
-            if(mutedChannel2Timer==0){
-                hUGE_mute_channel(HT_CH2,HT_CH_PLAY);
-            }
-        }
-
-        if(mutedChannel3Timer>0){
-            mutedChannel3Timer--;
-            if(mutedChannel3Timer==0){
-                hUGE_mute_channel(HT_CH3,HT_CH_PLAY);
-            }
-        }
-
-        if(mutedChannel4Timer>0){
-            mutedChannel4Timer--;
-            if(mutedChannel4Timer==0){
-                hUGE_mute_channel(HT_CH4,HT_CH_PLAY);
             }
         }
 
