@@ -12,9 +12,9 @@ extern const hUGESong_t song_number3;
 
 uint8_t nextSound =0;
 uint8_t currentSound=0;
-uint8_t muted=FALSE;
 uint8_t soundVolume=0;
 uint8_t soundBank=0;
+uint8_t pauseMusic=FALSE;
 
 // We could do this for all 4 channels, but in this demo we'll only use one channel
 int8_t mutedChannel1Timer=0;
@@ -128,8 +128,7 @@ void main(void)
     // A 'NR50_REG' value of zero will still be audible, so we turn off sound fully
     NR51_REG = 0; // Turn off sound fully
 
-
-    muted=FALSE;
+    pauseMusic=FALSE;
 
     __critical {
         ChangeSong();
@@ -163,6 +162,36 @@ void main(void)
 
             // Change the next sound we play
             nextSound=(currentSound+1)%3;
+        }
+        
+        
+        if((joypadCurrent & J_START)  && !(joypadPrevious & J_START)){
+
+            pauseMusic=!pauseMusic;
+
+            if(!pauseMusic){
+
+                __critical {
+                    add_VBL(PlaySoundVBL);
+                }
+
+                // Muge the huge driver sounds for channel 1-4
+                hUGE_mute_channel(HT_CH1,HT_CH_PLAY);
+                hUGE_mute_channel(HT_CH2,HT_CH_PLAY);
+                hUGE_mute_channel(HT_CH3,HT_CH_PLAY);
+                hUGE_mute_channel(HT_CH4,HT_CH_PLAY);
+            }else{
+
+                remove_VBL(PlaySoundVBL);
+
+                // Muge the huge driver sounds for channel 1-4
+                hUGE_mute_channel(HT_CH1,HT_CH_MUTE);
+                hUGE_mute_channel(HT_CH2,HT_CH_MUTE);
+                hUGE_mute_channel(HT_CH3,HT_CH_MUTE);
+                hUGE_mute_channel(HT_CH4,HT_CH_MUTE);
+
+                
+            }
         }
 
         if(mutedChannel1Timer>0){
