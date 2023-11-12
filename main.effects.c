@@ -9,20 +9,16 @@ extern const hUGESong_t song_number3;
 uint8_t joypadPrevious = 0;
 uint8_t joypadCurrent = 0;
 
-
 // We could do this for all 4 channels, but in this demo we'll only use one channel
 int8_t mutedChannel1Timer=0;
 
-
 void main(void)
 {
-    LCDC_REG = 0xD1;
     NR52_REG = 0x80;
-    NR50_REG = 0; // Lowest volume for left/right speakers. 
-    // A 'NR50_REG' value of zero will still be audible, so we turn off sound fully
-    NR51_REG = 0; // Turn off sound fully
+    NR50_REG = 0xFF; // Max volume for left/right speakers. 
+    NR51_REG = 0xFF; // Turn on sound fully
 
-
+    // the critical tags ensure no interrupts will be called while this block of code is being executed
     __critical {
         hUGE_init(&song_number3);
         add_VBL(hUGE_dosound);
@@ -51,9 +47,16 @@ void main(void)
         }
         
 
+        // If the timer is larger than 0, it's active
         if(mutedChannel1Timer>0){
+
+            // Decease the timer until it reaches zero
             mutedChannel1Timer--;
+
+            // If the timer just reached zero
             if(mutedChannel1Timer==0){
+
+                // unmute the previously muted channel
                 hUGE_mute_channel(HT_CH1,HT_CH_PLAY);
             }
         }

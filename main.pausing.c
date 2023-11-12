@@ -16,6 +16,7 @@ void main(void)
 
     musicIsPlaying=TRUE;
 
+    // the critical tags ensure no interrupts will be called while this block of code is being executed
     __critical {
 
         // Init and use huge drive to play song number 3
@@ -38,6 +39,8 @@ void main(void)
             // If our music should be playing
             if(musicIsPlaying){
 
+                
+                // the critical tags ensure no interrupts will be called while this block of code is being executed
                 // Re add the vertical blank interrupt to play the music
                 __critical {
                     add_VBL(hUGE_dosound);
@@ -52,6 +55,7 @@ void main(void)
             // Otherwise, if music should not be playing
             }else{
 
+                // the critical tags ensure no interrupts will be called while this block of code is being executed
                 // Remove the vertical blank interrupt used to play the msuci
                 __critical {
                     remove_VBL(hUGE_dosound);

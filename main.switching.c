@@ -92,6 +92,7 @@ void main(void)
 
     pauseMusic=FALSE;
 
+    // the critical tags ensure no interrupts will be called while this block of code is being executed
     __critical {
         ChangeSong(0);
         add_VBL(PlaySoundVBL);

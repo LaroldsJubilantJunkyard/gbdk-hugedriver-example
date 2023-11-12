@@ -13,9 +13,6 @@ uint8_t joypadPrevious = 0;
 uint8_t joypadCurrent = 0;
 
 
-// We could do this for all 4 channels, but in this demo we'll only use one channel
-int8_t mutedChannel1Timer=0;
-
 void UpdateAudioVolume() NONBANKED{
 
     uint8_t nonShiftedSoundVolume;
@@ -61,6 +58,7 @@ void main(void)
 
     muteMusic=FALSE;
 
+    // the critical tags ensure no interrupts will be called while this block of code is being executed
     __critical {
         hUGE_init(&song_number3);
         add_VBL(hUGE_dosound);

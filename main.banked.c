@@ -29,8 +29,8 @@ void main(void)
     NR50_REG = 0xFF; // Max volume for left/right speakers. 
     NR51_REG = 0xFF; // Turn on sound fully
 
+    // the critical tags ensure no interrupts will be called while this block of code is being executed
     __critical {
-
 
         // Switch ROM bank BEFORE!!! starting a song in a different bank
         SWITCH_ROM(BANK(song_number2_bankref));

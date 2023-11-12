@@ -16,6 +16,7 @@ void main(void)
 
     musicIsPlaying=TRUE;
 
+    // the critical tags ensure no interrupts will be called while this block of code is being executed
     __critical {
 
         // Init and use huge drive to play song number 3

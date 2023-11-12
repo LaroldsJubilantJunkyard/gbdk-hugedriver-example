@@ -11,6 +11,7 @@ void main(void)
     NR50_REG = 0xFF; // Maximum volume for left/right speakers. 
     NR51_REG = 0xFF; // Turn on sound fully
 
+    // the critical tags ensure no interrupts will be called while this block of code is being executed
     __critical {
 
         // Init and use huge drive to play song number 3
